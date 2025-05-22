@@ -1,21 +1,36 @@
+#!/Users/jankohuic/.virtualenvs/chess/bin/python3
+
+import os
 import berserk
 from datetime import datetime, time
 
-f = open('user.txt')
-username = f.read().split('\n')[0]
 
-client = berserk.Client()
-start = datetime.combine(datetime.today(), time(6,0))
-start = berserk.utils.to_millis(start)
+def main():
+    # loads username from .txt file
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    param_path = os.path.join(script_dir, 'username.txt')
+    f = open(param_path)
+    username = f.read().split('\n')[0]
 
-gs = client.games.export_by_player(username, since=start, max=1000)
-print('Fetching Games...')
-games = list(gs)
-len(games)
+    # berserk client initialization
+    client = berserk.Client()
+    start_hour = 4
+    start = datetime.combine(datetime.today(), time(start_hour,0))
+    start = berserk.utils.to_millis(start)
 
-times = [item['clock']['totalTime'] for item in games]
-total = sum(times)
-total_min = round(total / 60)
-total_sec = total & 60
+    # fetching games
+    games = client.games.export_by_player(username, since=start, max=1000)
+    print('Fetching Games...')
+    games = list(games)
 
-print(f'{total_min} min {total_sec} sec spent since 6 am UTC')
+    # summing gametime
+    times = [item['clock']['totalTime'] for item in games]
+    total = sum(times)
+    total_min = round(total / 60)
+    total_sec = total & 60
+
+    print(f'{total_min} min {total_sec} sec spent since {start_hour} UTC')
+
+
+if __name__ == '__main__':
+    main()
